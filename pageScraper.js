@@ -131,20 +131,28 @@ const scraperObject = {
 				: "http://localhost:8000"; // replace with correct url once hosted
 
 		try {
-			const allPromises = morphedJson.map(
-				async (product) =>
-					await fetch(
-						`${generationURL}?data=${encodeURI(
-							JSON.stringify(product)
-						)}`
-					)
-			);
+			// const allPromises = morphedJson.map(
+			// 	async (product) =>
+			// 		await fetch(
+			// 			`${generationURL}?data=${encodeURI(
+			// 				JSON.stringify(product)
+			// 			)}`
+			// 		)
+			// );
 
-			`${generationURL}?data=${encodeURI(
-				JSON.stringify(morphedJson[0])
-			)}`;
+			// `${generationURL}?data=${encodeURI(
+			// 	JSON.stringify(morphedJson[0])
+			// )}`;
 
-			const response = await Promise.all(allPromises);
+			// const response = await Promise.all(allPromises);
+
+			const product =  morphedJson[0];
+			console.log(`triggering request for ${product.title}`)
+			const response = await fetch(
+				`${generationURL}?data=${encodeURI(
+					JSON.stringify(product)
+				)}`
+			)
 
 			console.log(JSON.stringify(response, null, 4));
 		} catch (error) {
