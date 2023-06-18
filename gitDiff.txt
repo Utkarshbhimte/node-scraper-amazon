@@ -1,0 +1,148 @@
+diff --git a/pageScraper.js b/pageScraper.js
+index a318507..1a3b228 100644
+--- a/pageScraper.js
++++ b/pageScraper.js
+@@ -24,6 +24,8 @@ const scraperObject = {
+ 		let pagePromise = (link) =>
+ 			new Promise(async (resolve, reject) => {
+ 				// Create object to structure data
++
++				console.log(`starting the scrape for ${link}`)
+ 				let dataObj = {};
+ 				let newPage = await browser.newPage();
+ 				await newPage.goto(link, {
+@@ -81,7 +83,7 @@ const scraperObject = {
+ 
+ 		for (link in urls) {
+ 			scrapedDataArr.push(await pagePromise(urls[link]));
+-			if (scrapedDataArr.length === 5) {
++			if (scrapedDataArr.length === 1) {
+ 				scrapedDataArr = JSON.stringify(scrapedDataArr);
+ 				fs.writeFile("products.js", scrapedDataArr, (err) => {
+ 					if (err) {
+@@ -96,32 +98,32 @@ const scraperObject = {
+ 
+ 		const morphedJson = JSON.parse(scrapedDataArr).map((product) => ({
+ 			title: product.title,
+-			data: product.descriptions.map((description, index) =>
++			features: product.descriptions.map((description, index) =>
+ 				index === 0 || index % 2 === 0
+ 					? {
+-							left: {
+-								type: "image",
+-								url: !!product.imgURls[index]
+-									? product.imgURls[index]
+-									: product.imgURls[0],
+-							},
+-							right: {
+-								type: "points",
+-								text: [description],
+-							},
+-					  }
++						left: {
++							type: "image",
++							url: !!product.imgURls[index]
++								? product.imgURls[index]
++								: product.imgURls[0],
++						},
++						right: {
++							type: "points",
++							text: [description],
++						},
++					}
+ 					: {
+-							right: {
+-								type: "image",
+-								url: !!product.imgURls[index]
+-									? product.imgURls[index]
+-									: product.imgURls[0],
+-							},
+-							left: {
+-								type: "points",
+-								text: [description],
+-							},
+-					  }
++						right: {
++							type: "image",
++							url: !!product.imgURls[index]
++								? product.imgURls[index]
++								: product.imgURls[0],
++						},
++						left: {
++							type: "points",
++							text: [description],
++						},
++					}
+ 			),
+ 		}));
+ 
+@@ -131,30 +133,36 @@ const scraperObject = {
+ 				: "http://localhost:8000"; // replace with correct url once hosted
+ 
+ 		try {
+-			// const allPromises = morphedJson.map(
+-			// 	async (product) =>
+-			// 		await fetch(
+-			// 			`${generationURL}?data=${encodeURI(
+-			// 				JSON.stringify(product)
+-			// 			)}`
+-			// 		)
+-			// );
+-
+-			// `${generationURL}?data=${encodeURI(
+-			// 	JSON.stringify(morphedJson[0])
+-			// )}`;
+-
+-			// const response = await Promise.all(allPromises);
+-
+-			const product =  morphedJson[0];
+-			console.log(`triggering request for ${product.title}`)
+-			const response = await fetch(
+-				`${generationURL}?data=${encodeURI(
+-					JSON.stringify(product)
+-				)}`
+-			)
+-
+-			console.log(JSON.stringify(response, null, 4));
++			const allPromises = morphedJson.map(
++				async (product) => {
++					console.log(`triggering the video for ${product.title}`)
++					const params = new URLSearchParams({
++						data: JSON.stringify({
++							title: product.title,
++							features: product.features
++						})
++					})
++
++					console.log("")
++					console.log("")
++
++					console.log(JSON.stringify({
++						title: product.title,
++						features: product.features
++					}, null, 4))
++
++					const url = `${generationURL}?${params}`
++					console.log("")
++					console.log("")
++					console.log("🚀 ~ file: pageScraper.js ~ line 147 ~ url", url)
++					console.log("")
++					console.log("")
++
++					await fetch(url)
++				}
++			);
++
++			await Promise.all(allPromises)
+ 		} catch (error) {
+ 			console.error(error);
+ 		}
+diff --git a/products.js b/products.js
+index f7acf05..e62c861 100644
+--- a/products.js
++++ b/products.js
+@@ -1 +1 @@
+-[{"title":"DHP Emily Convertible Futon, Black","brand":"Visit the DHP Store","descriptions":["Modern look and design with chrome metal legs","Split Back to suit your needs","Easily converts from sitting to lounging and sleeping. Tufted backrest and seating and wide side arms","Black and vanilla available in faux leather, navy and grey available in linen","Pair the futon with the Emily chaise lounger for a queen sized sleeping space. Sofa dimensions: 71\"L x 34\"W x 32\"H"],"imgURls":["https://images-na.ssl-images-amazon.com/images/I/81nLEuLcNqL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/816GSMLcOfL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/61SyqqjNCWL._AC_SX450_.jpg","https://images-na.ssl-images-amazon.com/images/I/61H02ABp%2BrL._AC_SX450_.jpg","https://images-na.ssl-images-amazon.com/images/I/61Mc7fQd46L._AC_SX450_.jpg"]},{"title":"Gizhome 4 Pack Sofa Snap Sectional Couch Connector with Screws","brand":"Brand: Gizhome","descriptions":["WIDELY USED. Fits Many Different Style Sectional Sofa's. Please make sure its size matches your sofa before you buy it","EASY INSTALLATION. Easy To Install DIY Project","PACKAGE INCLUDES. Set of 4 Metal Sectional Connectors, Screws Included","EXCELLENT QUALITY. Good materials, anti-corrosion, wear-resisting, not easy to deform and strong pressure resistance","CLEVER DESIGN. The screw is close to the iron plate so that it does not protrude and is not easy to scratch. Multi-card design can meet your different needs"],"imgURls":["https://images-na.ssl-images-amazon.com/images/I/51-kFC%2B4HqL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/410A3MK7YpL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/51zYkmUGdpL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/61JzZL1TQsL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/61v1AIQpIiL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/512wR07C4RL._AC_SX450_.jpg","https://images-na.ssl-images-amazon.com/images/I/71BEDGamNvL._AC_SY606_.jpg"]},{"title":"Intex Inflatable Corner Sofa, 101\" X 80\" X 30\"","brand":"Brand: Intex","descriptions":["Designed with a waterproof-flocked top surface and a vinyl bottom, this sofa provides an incredibly comfortable sitting surface for any occasion","A 2-in-1 valve with extra-wide openings ensures fast inflating and deflating","Upon deflating, the corner sofa folds compactly for storage or travel","Designed with a waterproof-flocked top surface and a vinyl bottom, this sofa provides an incredibly comfortable sitting surface for any occasion.^A 2-in-1 valve with extra-wide openings ensures fast inflating and deflating. Upon deflating, the Corner Sofa folds compactly for storage or travel.^Approximate inflated size 101\" x 80\" x 30\". Weight capacity 880 lbs."],"imgURls":["https://images-na.ssl-images-amazon.com/images/I/51YFQcdxJYL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/81Cew95p8eL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/81rJR5ZEN%2BL._AC_SY450_.jpg"]},{"title":"Divano Roma Furniture Classic Sofas, Large, Dark Grey","brand":"Brand: Divano Roma Furniture","descriptions":["Ultra comfortable chesterfield style large sofa with tufted design for that classic and sophisticated look","Premium high quality linen fabric upholstery with overstuffed arms and back rests for comfort, tufted plush arm rests","Removable seat cushions with velcro attached to avoid sliding, Victorian style wooden legs","Dimensions: Overall - 84\"W x 32\"D x 29\"H inches, Seat - 66\"W x 23\"D inches, Back Rest - 66\"W x 13\"H inches","Assembly Required - This item is KD, instructions and hardware are included"],"imgURls":["https://images-na.ssl-images-amazon.com/images/I/81-rv1NtZIL._AC_SX450_.jpg","https://images-na.ssl-images-amazon.com/images/I/61ebCVW33sL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/61oBBzLRUCL._AC_SY450_.jpg"]},{"title":"Velago Folding Lazy Sofa Chair Stylish Sofa Couch Beds Lounge Chair, Perfect for Meditation, Reading, TV Watching, Coffee, Gaming Floor Chair, High Back, Softly Cushioned, Home Sofa - Black (191001)","brand":"Brand: Velago","descriptions":["portable floor chair flat size: 39.5” x 19.5” x 4” (l x w x h); 90°folded size: 19.7” x 19.5” x19.7” (l x w x h). it is lightweight and easy to carry or storage with it fully reclined to flat.","superior comfort covered by the breathable wearproof cotton&linen fabric, no pilling, and padded with the soft recycled cotton, excellent resilience, this floor chair is comfortable and safe.","ergonomic design the backrest can be locked in 5 different positions, which deliver a sturdy support for the upper and lower back. you can get the position you want easily in seconds.","easy maintenance the durable cotton&linen fabric cover is zippered and removable for easy cleaning. it takes few minutes to take the cover off, and get it cleaned.","widely used this chair is perfect for floor activities like meditation, playing video games, watching tv, working with laptop, reading, etc."],"imgURls":["https://images-na.ssl-images-amazon.com/images/I/81j1WT94mTL._AC_SX355_.jpg","https://images-na.ssl-images-amazon.com/images/I/71UVjPS-22L._AC_SY355_.jpg","https://images-na.ssl-images-amazon.com/images/I/710Q4xD3bDL._AC_SY355_.jpg","https://images-na.ssl-images-amazon.com/images/I/719ZQXC2lLL._AC_SY355_.jpg","https://images-na.ssl-images-amazon.com/images/I/71RGtkbbEHL._AC_SX355_.jpg"]}]
+\ No newline at end of file
++[{"title":"Giantex Convertible Sofa Bed Sleeper Chair, 5 Position Adjustable Backrest, Folding Arm Chair Sleeper w/Pillow, Upholstered Seat, Leisure Chaise Lounge Couch for Home Office (Gray)","brand":"Visit the Giantex Store","descriptions":["【3 in 1 Versatile Performance】: With the foldable design, this sofa bed can be easily converted into an upholstered sofa, a laid-back lounge or a comfortable bed to satisfy your different needs. The armrests and legs hidden in the back will be support points when used as a single bed. It is a perfect solution to save your limited space.","【5-Positon Adjustable Backrest】: The backrest angle can be adjusted for 5 reclining levels, including 18°, 36°, 54°, 72°, 90°. Multiple adjustment helps you find the ideal sitting position or resting angle to relax your body and relieve fatigue. Whether you want to sit, lean, or lie down, it can be easily realized.","【Padded Seat and Back】: The seat and back are filled with high resilience sponge to give you an enjoyable sitting and sleeping experience. Fine linen cover features gentle texture and friendly touch, providing extra comfortable feeling. Besides, high back design can support your body nicely and distribute pressure when you lean on it.","【Sturdy Frame & Multi-scene Application】: The folding sleeper is designed with scientific principle, which is durable and strong to withstand a weight of 440 lbs. With minimalist contour and stylish look, it can blend perfectly into any decor. It is perfect for bedroom, living room, balcony, office, etc.","【User-friendly Design】: The convertible sofa bed comes with a soft pillow, which will increase your enjoyment when you lie on it. In addition, the sofa and pillow cover with smooth zippers is removable for easy cleaning. And the level footpads is included on the hidden legs, preventing the floor from being scratched."],"imgURls":["https://images-na.ssl-images-amazon.com/images/I/71ByqSEQXdL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/61qfdXkkk3L._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/71RZtu1mp%2BL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/71nIsbuW0mL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/71w%2B3myCVTL._AC_SY450_.jpg","https://images-na.ssl-images-amazon.com/images/I/61AbfzuiYAL._AC_SY450_.jpg"]}]
+\ No newline at end of file

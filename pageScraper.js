@@ -24,6 +24,8 @@ const scraperObject = {
 		let pagePromise = (link) =>
 			new Promise(async (resolve, reject) => {
 				// Create object to structure data
+
+				console.log(`starting the scrape for ${link}`)
 				let dataObj = {};
 				let newPage = await browser.newPage();
 				await newPage.goto(link, {
@@ -81,7 +83,7 @@ const scraperObject = {
 
 		for (link in urls) {
 			scrapedDataArr.push(await pagePromise(urls[link]));
-			if (scrapedDataArr.length === 5) {
+			if (scrapedDataArr.length === 1) {
 				scrapedDataArr = JSON.stringify(scrapedDataArr);
 				fs.writeFile("products.js", scrapedDataArr, (err) => {
 					if (err) {
@@ -96,32 +98,32 @@ const scraperObject = {
 
 		const morphedJson = JSON.parse(scrapedDataArr).map((product) => ({
 			title: product.title,
-			data: product.descriptions.map((description, index) =>
+			features: product.descriptions.map((description, index) =>
 				index === 0 || index % 2 === 0
 					? {
-							left: {
-								type: "image",
-								url: !!product.imgURls[index]
-									? product.imgURls[index]
-									: product.imgURls[0],
-							},
-							right: {
-								type: "points",
-								text: [description],
-							},
-					  }
+						left: {
+							type: "image",
+							url: !!product.imgURls[index]
+								? product.imgURls[index]
+								: product.imgURls[0],
+						},
+						right: {
+							type: "points",
+							text: [description],
+						},
+					}
 					: {
-							right: {
-								type: "image",
-								url: !!product.imgURls[index]
-									? product.imgURls[index]
-									: product.imgURls[0],
-							},
-							left: {
-								type: "points",
-								text: [description],
-							},
-					  }
+						right: {
+							type: "image",
+							url: !!product.imgURls[index]
+								? product.imgURls[index]
+								: product.imgURls[0],
+						},
+						left: {
+							type: "points",
+							text: [description],
+						},
+					}
 			),
 		}));
 
@@ -131,30 +133,36 @@ const scraperObject = {
 				: "http://localhost:8000"; // replace with correct url once hosted
 
 		try {
-			// const allPromises = morphedJson.map(
-			// 	async (product) =>
-			// 		await fetch(
-			// 			`${generationURL}?data=${encodeURI(
-			// 				JSON.stringify(product)
-			// 			)}`
-			// 		)
-			// );
+			const allPromises = morphedJson.map(
+				async (product) => {
+					console.log(`triggering the video for ${product.title}`)
+					const params = new URLSearchParams({
+						data: JSON.stringify({
+							title: product.title,
+							features: product.features
+						})
+					})
 
-			// `${generationURL}?data=${encodeURI(
-			// 	JSON.stringify(morphedJson[0])
-			// )}`;
+					console.log("")
+					console.log("")
 
-			// const response = await Promise.all(allPromises);
+					console.log(JSON.stringify({
+						title: product.title,
+						features: product.features
+					}, null, 4))
 
-			const product =  morphedJson[0];
-			console.log(`triggering request for ${product.title}`)
-			const response = await fetch(
-				`${generationURL}?data=${encodeURI(
-					JSON.stringify(product)
-				)}`
-			)
+					const url = `${generationURL}?${params}`
+					console.log("")
+					console.log("")
+					console.log("🚀 ~ file: pageScraper.js ~ line 147 ~ url", url)
+					console.log("")
+					console.log("")
 
-			console.log(JSON.stringify(response, null, 4));
+					await fetch(url)
+				}
+			);
+
+			await Promise.all(allPromises)
 		} catch (error) {
 			console.error(error);
 		}
